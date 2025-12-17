@@ -3,39 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --background: #f3f4f6;
-  /* Light gray background */
-  --foreground: #111827;
-  /* Dark text */
-
-  --card: #ffffff;
-  --card-foreground: #111827;
-
-  --popover: #ffffff;
-  --popover-foreground: #111827;
-
+  --background: #09090b;
+  --foreground: #fafafa;
   --primary: #10b981;
-  /* Emerald green */
   --primary-foreground: #ffffff;
-
-  --secondary: #e5e7eb;
-  /* Light gray for secondary elements */
-  --secondary-foreground: #1f2937;
-
-  --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
-  /* Gray text */
-
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #52525b;
+  --muted-foreground: #a1a1aa;
   --accent: #f59e0b;
   --accent-foreground: #ffffff;
-
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-
-  --border: #e5e7eb;
-  --input: #e5e7eb;
+  --border: #27272a;
+  --input: #27272a;
   --ring: #10b981;
-
   --radius: 0.5rem;
 }
 
