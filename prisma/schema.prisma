@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  name          String?
+  balance       Decimal   @default(0.00)
+  referralCode  String    @unique @default(cuid())
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  transactions  Transaction[]
+  withdrawals   WithdrawalRequest[]
+  completedTasks CompletedTask[]
+}
+
+model Task {
+  id            String    @id @default(uuid())
+  title         String
+  description   String
+  rewardAmount  Decimal
+  type          TaskType
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  completedBy   CompletedTask[]
+}
+
+model CompletedTask {
+  id            String    @id @default(uuid())
+  userId        String
+  taskId        String
+  completedAt   DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id])
+  task          Task      @relation(fields: [taskId], references: [id])
+}
+
+model Transaction {
+  id            String    @id @default(uuid())
+  userId        String
+  amount        Decimal
+  type          TxType
+  status        TxStatus  @default(COMPLETED)
+  description   String?
+  createdAt     DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id])
+}
+
+model WithdrawalRequest {
+  id            String    @id @default(uuid())
+  userId        String
+  amount        Decimal
+  method        String    // e.g., "PayPal: user@example.com"
+  status        WithdrawalStatus @default(PENDING)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TaskType {
+  AD
+  OFFER
+  REFERRAL
+  DAILY
+  OTHER
+}
+
+enum TxType {
+  EARN
+  WITHDRAW
+  BONUS
+}
+
+enum TxStatus {
+  COMPLETED
+  PENDING
+  FAILED
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
