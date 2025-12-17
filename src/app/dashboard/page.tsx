@@ -11,7 +11,7 @@ async function getData() {
 
     if (!session) return null;
 
-    const [userRaw, tasksRaw] = await Promise.all([
+    const [userRaw, tasksRaw, transactionsRaw] = await Promise.all([
         prisma.user.findUnique({
             where: { id: session.userId },
             select: { name: true, balance: true, email: true },
@@ -19,6 +19,11 @@ async function getData() {
         prisma.task.findMany({
             where: { active: true },
             take: 5
+        }),
+        prisma.transaction.findMany({
+            where: { userId: session.userId },
+            orderBy: { createdAt: 'desc' },
+            take: 10
         }),
     ]);
 
@@ -35,7 +40,13 @@ async function getData() {
         updatedAt: task.updatedAt.toISOString(),
     }));
 
-    return { user, tasks };
+    const transactions = transactionsRaw.map(tx => ({
+        ...tx,
+        amount: tx.amount.toString(),
+        createdAt: tx.createdAt.toISOString(),
+    }));
+
+    return { user, tasks, transactions };
 }
 
 export default async function DashboardPage() {
@@ -43,5 +54,5 @@ export default async function DashboardPage() {
 
     if (!data?.user) return null;
 
-    return <DashboardClient user={data.user} tasks={data.tasks} />;
+    return <DashboardClient user={data.user} tasks={data.tasks} transactions={data.transactions} />;
 }
