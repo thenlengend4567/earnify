@@ -1,13 +1,12 @@
-
 'use client';
 
 import { useState } from 'react';
-import { CreditCard, TrendingUp, TrendingDown, Plus, Send, MoreVertical, Wallet } from 'lucide-react';
+import { Wallet, Settings, MoreVertical, LayoutDashboard, ArrowUpRight, TrendingUp, AlertCircle, Plus, Send } from 'lucide-react';
 
 export default function DashboardClient({ user, tasks, transactions }: { user: any, tasks: any[], transactions: any[] }) {
-    const [balance, setBalance] = useState(parseFloat(user.balance));
+    const balance = parseFloat(user.balance || '0');
 
-    // Calculate stats from transactions
+    // Calculate real stats
     const totalIncome = transactions
         .filter(t => t.type === 'EARN' || t.type === 'BONUS')
         .reduce((acc, t) => acc + parseFloat(t.amount), 0);
@@ -16,219 +15,191 @@ export default function DashboardClient({ user, tasks, transactions }: { user: a
         .filter(t => t.type === 'WITHDRAW')
         .reduce((acc, t) => acc + parseFloat(t.amount), 0);
 
-    // Mock chart data based on active balance to look dynamic (since we don't have historical snapshots yet)
-    // In a real app, this would come from a tailored API
-    const chartData = [10, 25, 40, 30, 55, 45, 70, 60, 85, 90, 75, 100].map(v => v * (balance > 0 ? 1 : 0.1));
+    // Helper for currency formatting
+    const currency = (val: number) =>
+        new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-[var(--foreground)]">
+        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 text-zinc-100 font-sans">
 
-            {/* LEFT COLUMN (2/3 width) */}
-            <div className="lg:col-span-2 space-y-8">
-
-                {/* MONEY INSIGHT SECTION */}
-                <div className="card p-8 bg-[var(--secondary)]/10 backdrop-blur-md border border-[var(--border)] rounded-3xl relative overflow-hidden shadow-xl">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--primary)]/5 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16"></div>
-
-                    {/* Header */}
-                    <div className="flex justify-between items-start mb-8 relative z-10">
-                        <div>
-                            <h3 className="text-[var(--muted-foreground)] text-sm font-medium mb-1 uppercase tracking-wider">Available Balance</h3>
-                            <div className="text-5xl md:text-6xl font-extrabold tracking-tight flex items-baseline gap-2">
-                                ${balance.toFixed(2)}
-                                <span className="text-sm font-normal text-green-500 bg-green-500/10 px-2 py-1 rounded-full">+0.0% this week</span>
-                            </div>
-                        </div>
-                        <div className="flex gap-2">
-                            <button className="btn btn-sm btn-ghost text-xs">Weekly</button>
-                            <button className="btn btn-sm btn-outline text-xs bg-[var(--background)]">Monthly</button>
-                        </div>
-                    </div>
-
-                    {/* Stats Row */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-                        <div className="p-4 rounded-2xl bg-[var(--background)]/50 border border-[var(--border)] backdrop-blur-sm">
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                <span className="text-xs text-[var(--muted-foreground)] uppercase font-semibold">Total Earned</span>
-                            </div>
-                            <div className="text-xl font-bold">${totalIncome.toFixed(2)}</div>
-                        </div>
-                        <div className="p-4 rounded-2xl bg-[var(--background)]/50 border border-[var(--border)] backdrop-blur-sm">
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                                <span className="text-xs text-[var(--muted-foreground)] uppercase font-semibold">Total Withdrawn</span>
-                            </div>
-                            <div className="text-xl font-bold">${totalWithdrawn.toFixed(2)}</div>
-                        </div>
-                        <div className="p-4 rounded-2xl bg-[var(--background)]/50 border border-[var(--border)] backdrop-blur-sm hidden md:block">
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                                <span className="text-xs text-[var(--muted-foreground)] uppercase font-semibold">Active Tasks</span>
-                            </div>
-                            <div className="text-xl font-bold">{tasks.length}</div>
-                        </div>
-                    </div>
-
-                    {/* Dynamic Chart Visual */}
-                    <div className="h-40 flex items-end justify-between gap-2 px-2 pb-2">
-                        {chartData.map((height, i) => (
-                            <div key={i} className="w-full bg-gradient-to-t from-[var(--primary)]/20 to-[var(--primary)]/50 rounded-t-lg hover:from-[var(--primary)]/40 hover:to-[var(--primary)]/70 transition-all duration-300 relative group" style={{ height: `${height}%` }}>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* RECENT TRANSACTIONS TABLE */}
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800 pb-6">
                 <div>
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="font-bold text-xl flex items-center gap-2">
-                            <TrendingUp className="w-5 h-5 text-[var(--primary)]" />
-                            Recent Activity
-                        </h3>
-                    </div>
-
-                    {transactions.length === 0 ? (
-                        <div className="text-center py-12 bg-[var(--secondary)]/5 rounded-2xl border border-[var(--border)] border-dashed">
-                            <TrendingDown className="w-8 h-8 mx-auto text-[var(--muted-foreground)] mb-3 opacity-50" />
-                            <p className="text-[var(--muted-foreground)]">No transactions yet. Start earning to see data here!</p>
-                        </div>
-                    ) : (
-                        <div className="bg-[var(--card)] rounded-3xl border border-[var(--border)] overflow-hidden shadow-sm">
-                            <table className="w-full">
-                                <thead className="bg-[var(--secondary)]/30 text-xs uppercase text-[var(--muted-foreground)]">
-                                    <tr>
-                                        <th className="px-6 py-4 text-left font-semibold">Type</th>
-                                        <th className="px-6 py-4 text-left font-semibold">Description</th>
-                                        <th className="px-6 py-4 text-left font-semibold hidden sm:table-cell">Date</th>
-                                        <th className="px-6 py-4 text-right font-semibold">Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-[var(--border)]">
-                                    {transactions.map((tx) => (
-                                        <tr key={tx.id} className="hover:bg-[var(--secondary)]/10 transition-colors group">
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${tx.type === 'EARN' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                                        tx.type === 'WITHDRAW' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                                                            'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
-                                                    }`}>
-                                                    {tx.type}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm font-medium">
-                                                {tx.description || 'System Transaction'}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-[var(--muted-foreground)] hidden sm:table-cell">
-                                                {new Date(tx.createdAt).toLocaleDateString()}
-                                            </td>
-                                            <td className={`px-6 py-4 text-right font-bold ${tx.type === 'WITHDRAW' ? 'text-red-500' : 'text-green-500'
-                                                }`}>
-                                                {tx.type === 'WITHDRAW' ? '-' : '+'}${parseFloat(tx.amount).toFixed(2)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+                    <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+                        Dashboard
+                    </h1>
+                    <p className="text-zinc-400 text-sm">Welcome back, {user.name || 'Earner'}</p>
                 </div>
-
-            </div>
-
-            {/* RIGHT COLUMN (1/3 width) - MY CARD */}
-            <div className="space-y-8">
-                {/* Mock Card Visual */}
-                <div className="group relative">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[var(--primary)] to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-                    <div className="relative bg-[#1c1c1e] text-white rounded-2xl p-6 shadow-2xl overflow-hidden h-56 flex flex-col justify-between transform transition-transform group-hover:scale-[1.01] duration-300">
-
-                        {/* Mesh gradient background for card */}
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none"></div>
-
-                        <div className="flex justify-between items-start z-10">
-                            <div className="w-12 h-8 bg-white/20 backdrop-blur-md rounded-md border border-white/10"></div>
-                            <span className="text-xs font-mono opacity-80 uppercase tracking-widest">Premium</span>
-                        </div>
-
-                        <div className="z-10">
-                            <p className="font-mono text-xl tracking-[0.15em] mb-1 shadow-black drop-shadow-md">•••• •••• •••• {user.id ? user.id.slice(0, 4) : '0000'}</p>
-                            <p className="text-[10px] opacity-60 font-mono">VIRTUAL CARD</p>
-                        </div>
-
-                        <div className="flex justify-between text-xs items-end z-10">
-                            <div>
-                                <span className="block opacity-60 text-[10px] uppercase mb-0.5">Card Holder</span>
-                                <span className="font-bold tracking-wide text-sm">{user.name || 'Earnify User'}</span>
-                            </div>
-                            <div className="text-right">
-                                <CreditCard className="w-8 h-8 opacity-80" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="grid grid-cols-2 gap-4">
-                    <button className="btn h-auto py-4 flex flex-col items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--secondary)]/10 hover:bg-[var(--secondary)]/30 transition-all hover:-translate-y-1">
-                        <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-500 mb-1">
-                            <Plus className="w-5 h-5" />
-                        </div>
-                        <span className="text-sm font-semibold">Deposit</span>
+                <div className="flex items-center gap-3">
+                    <button className="p-2 rounded-full hover:bg-zinc-800 transition-colors text-zinc-400">
+                        <Settings className="w-5 h-5" />
                     </button>
-                    <button className="btn h-auto py-4 flex flex-col items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--secondary)]/10 hover:bg-[var(--secondary)]/30 transition-all hover:-translate-y-1">
-                        <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-red-500 mb-1">
-                            <Send className="w-5 h-5" />
-                        </div>
-                        <span className="text-sm font-semibold">Withdraw</span>
+                    <button className="bg-emerald-500 hover:bg-emerald-600 text-black font-semibold py-2 px-4 rounded-lg text-sm transition-colors flex items-center gap-2">
+                        <Plus className="w-4 h-4" /> Add Funds
                     </button>
-                </div>
-
-                {/* Available Tasks Mini-List */}
-                <div className="card p-6 border border-[var(--border)] rounded-3xl bg-[var(--background)]">
-                    <h4 className="font-bold mb-4 flex items-center gap-2">
-                        <Wallet className="w-4 h-4 text-[var(--primary)]" />
-                        Quick Earn
-                    </h4>
-                    <div className="space-y-3">
-                        {tasks.slice(0, 3).map(task => (
-                            <div key={task.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--secondary)]/20 transition-colors cursor-pointer border border-transparent hover:border-[var(--border)]">
-                                <div className="w-10 h-10 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center text-[var(--primary)] font-bold text-xs">
-                                    ${task.rewardAmount}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium truncate">{task.title}</p>
-                                    <p className="text-xs text-[var(--muted-foreground)] truncate">{task.type}</p>
-                                </div>
-                                <button className="btn btn-sm btn-ghost p-1 rounded-full"><ArrowRight className="w-4 h-4" /></button>
-                            </div>
-                        ))}
-                    </div>
-                    <button className="w-full mt-4 btn btn-outline btn-sm rounded-xl">View All Tasks</button>
                 </div>
             </div>
 
+            {/* Top Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Balance Card */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 relative overflow-hidden group hover:border-emerald-500/50 transition-all">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none group-hover:bg-emerald-500/20 transition-all"></div>
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <p className="text-zinc-500 text-xs uppercase tracking-widest font-semibold">Total Balance</p>
+                            <h2 className="text-3xl font-bold mt-2 text-white">{currency(balance)}</h2>
+                        </div>
+                        <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">
+                            <Wallet className="w-5 h-5" />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-zinc-400">
+                        <span className="text-emerald-400 flex items-center gap-1 font-medium bg-emerald-400/10 px-2 py-0.5 rounded">
+                            <ArrowUpRight className="w-3 h-3" /> 0%
+                        </span>
+                        <span>vs last month</span>
+                    </div>
+                </div>
+
+                {/* Income Card */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 group hover:border-blue-500/50 transition-all">
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <p className="text-zinc-500 text-xs uppercase tracking-widest font-semibold">Total Earned</p>
+                            <h2 className="text-3xl font-bold mt-2 text-white">{currency(totalIncome)}</h2>
+                        </div>
+                        <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
+                            <TrendingUp className="w-5 h-5" />
+                        </div>
+                    </div>
+                    <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-4 overflow-hidden">
+                        <div className="bg-blue-500 h-full rounded-full transition-all duration-1000" style={{ width: `${totalIncome > 0 ? '100%' : '0%'}` }}></div>
+                    </div>
+                </div>
+
+                {/* Pending Tasks Card */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 group hover:border-purple-500/50 transition-all">
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <p className="text-zinc-500 text-xs uppercase tracking-widest font-semibold">Available Tasks</p>
+                            <h2 className="text-3xl font-bold mt-2 text-white">{tasks.length}</h2>
+                        </div>
+                        <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
+                            <LayoutDashboard className="w-5 h-5" />
+                        </div>
+                    </div>
+                    <p className="text-xs text-zinc-400">Complete tasks to earn more.</p>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                {/* Main Chart / Activity Area (Left 2 cols) */}
+                <div className="lg:col-span-2 space-y-8">
+                    {/* Financial Overview Chart Placeholder */}
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="font-semibold text-zinc-200">Financial Overview</h3>
+                            <select className="bg-black border border-zinc-700 text-zinc-400 text-xs rounded-lg px-2 py-1 outline-none focus:border-emerald-500">
+                                <option>This Month</option>
+                            </select>
+                        </div>
+
+                        {/* Empty State Chart Visual */}
+                        <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-zinc-800 rounded-xl bg-black/20">
+                            <div className="p-4 bg-zinc-800/50 rounded-full mb-3">
+                                <AlertCircle className="w-8 h-8 text-zinc-600" />
+                            </div>
+                            <p className="text-zinc-500 font-medium">No financial data yet</p>
+                            <p className="text-zinc-600 text-xs mt-1">Start earning to see your trends here.</p>
+                        </div>
+                    </div>
+
+                    {/* Recent Transactions List */}
+                    <div>
+                        <h3 className="font-bold text-lg mb-4 text-zinc-200">Recent Transactions</h3>
+                        {transactions.length === 0 ? (
+                            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 text-center text-zinc-500 flex flex-col items-center justify-center min-h-[200px]">
+                                <TrendingUp className="w-10 h-10 mb-4 opacity-20" />
+                                <p>No transactions found.</p>
+                                <p className="text-xs opacity-60 mt-1">Your recent earnings will appear here.</p>
+                            </div>
+                        ) : (
+                            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-zinc-950/50 text-zinc-400 uppercase text-xs">
+                                            <tr>
+                                                <th className="px-6 py-4">Type</th>
+                                                <th className="px-6 py-4">Description</th>
+                                                <th className="px-6 py-4 text-right">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-zinc-800">
+                                            {transactions.map((t) => (
+                                                <tr key={t.id} className="hover:bg-zinc-800/50 transition-colors">
+                                                    <td className="px-6 py-4">
+                                                        <span className={`px-2 py-1 rounded text-xs font-semibold ${t.type === 'EARN' ? 'bg-emerald-500/10 text-emerald-500' :
+                                                                'bg-red-500/10 text-red-500'
+                                                            }`}>
+                                                            {t.type}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 font-medium text-zinc-300">{t.description || 'Transaction'}</td>
+                                                    <td className={`px-6 py-4 text-right font-bold ${t.type === 'EARN' ? 'text-emerald-400' : 'text-red-400'
+                                                        }`}>
+                                                        {t.type === 'EARN' ? '+' : '-'}{currency(parseFloat(t.amount))}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Sidebar / Extra Widgets (Right 1 col) */}
+                <div className="space-y-6">
+                    {/* Spending Donut Placeholder */}
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+                        <h3 className="font-semibold text-zinc-200 mb-6">Spending Breakdown</h3>
+                        {/* Empty Donut Visual */}
+                        <div className="relative w-48 h-48 mx-auto mb-6">
+                            <div className="w-full h-full rounded-full border-8 border-zinc-800 opacity-50 border-t-zinc-700 animate-spin-slow" style={{ animationDuration: '3s' }}></div>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="text-center">
+                                    <span className="block text-2xl font-bold text-zinc-500">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="text-center text-xs text-zinc-500 px-4">
+                            Your spending habits will be visualized here once you start using your funds.
+                        </div>
+                    </div>
+
+                    {/* Quick Task List */}
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="font-semibold text-zinc-200">Recommended Tasks</h3>
+                            <button className="text-xs text-emerald-500 hover:underline">View All</button>
+                        </div>
+                        <div className="space-y-3">
+                            {tasks.slice(0, 3).map(task => (
+                                <div key={task.id} className="p-3 bg-black/20 hover:bg-zinc-800 rounded-xl transition-colors cursor-pointer border border-zinc-800 hover:border-emerald-500/50 group">
+                                    <div className="flex justify-between items-start mb-1">
+                                        <span className="text-sm font-medium text-zinc-300 group-hover:text-emerald-400 transition-colors">{task.title}</span>
+                                        <span className="text-emerald-500 font-bold text-xs">{currency(task.rewardAmount)}</span>
+                                    </div>
+                                    <div className="text-xs text-zinc-500 truncate">{task.description}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
-}
-
-// Helper icon
-function ArrowRight(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <path d="M5 12h14" />
-            <path d="m12 5 7 7-7 7" />
-        </svg>
-    )
 }
